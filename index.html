@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Пять суперсил</title>
+<meta name="description" content="Игра для детей от 7 лет и взрослых: пять испытаний на интуицию, эмпатию, воображение, память и критическое мышление.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<style>
+/* Layout: одна узкая колонка «экзаменационный лист»; пять оттенков кодируют пять способностей */
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#151A2E; --muted:#59617F; --line:#D8DDEA;
+  --accent:#2149B8; --accent-ink:#FFFFFF;
+  --c1:#B26A00; --c2:#BE335D; --c3:#6545C0; --c4:#0A8174; --c5:#2A5FD1;
+  --ok:#1D7F47; --bad:#C03535;
+  --f-display:'Unbounded','Golos Text',system-ui,sans-serif;
+  --f-body:'Golos Text',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1120; --surface:#171B2D; --ink:#E6E9F5; --muted:#949BB8; --line:#2A3050;
+  --accent:#86A4FF; --accent-ink:#0E1120;
+  --c1:#F0A53A; --c2:#F2719A; --c3:#A68DF7; --c4:#3CC6B6; --c5:#7397F7; --ok:#4FCB86; --bad:#F27474; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1120; --surface:#171B2D; --ink:#E6E9F5; --muted:#949BB8; --line:#2A3050;
+  --accent:#86A4FF; --accent-ink:#0E1120;
+  --c1:#F0A53A; --c2:#F2719A; --c3:#A68DF7; --c4:#3CC6B6; --c5:#7397F7;
+  --ok:#4FCB86; --bad:#F27474; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}
+.brand{font-family:var(--f-display);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.segs{display:flex;gap:5px}
+.segs span{width:26px;height:6px;border-radius:3px;background:var(--line)}
+.segs span.done{background:var(--c)}
+.segs span.now{box-shadow:0 0 0 2px var(--c)}
+
+.screen{display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(30px,7.4vw,46px);line-height:1.06}
+h2{font-size:clamp(24px,5.6vw,32px);line-height:1.12}
+p{margin:0}
+.eyebrow,.label{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:17px;max-width:60ch}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.note{font-size:14px;color:var(--muted)}
+.ab-title{color:var(--c)}
+
+.ab-list{list-style:none;margin:0;padding:0}
+.ab-list li{display:grid;grid-template-columns:40px 1fr;gap:4px;padding:14px 0;border-top:1px solid var(--line)}
+.ab-list li:last-child{border-bottom:1px solid var(--line)}
+.ab-list .num{font-family:var(--f-mono);color:var(--c);font-size:18px;line-height:1.4}
+.ab-list b{display:block;font-weight:600}
+.ab-list li span:not(.num){color:var(--muted);font-size:15px}
+
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+.btn{font:600 16px/1.3 var(--f-body);padding:13px 20px;min-height:48px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+.btn:hover:not(:disabled){border-color:var(--c,var(--accent))}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn:disabled{cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.small{min-height:36px;padding:6px 12px;font-size:14px}
+
+.rules{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+
+.playbar{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.chip{font-family:var(--f-display);font-weight:500;font-size:15px;color:var(--c)}
+#stage{display:flex;flex-direction:column;gap:14px}
+
+.field{position:relative;aspect-ratio:16/10;max-width:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.field canvas{display:block;width:100%;height:100%}
+.veil{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:16px;
+  font-family:var(--f-display);font-weight:500;font-size:18px;color:var(--muted);background:var(--surface)}
+.timer{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.timer i{display:block;height:100%;background:var(--c);transform-origin:left;transform:scaleX(1)}
+
+.opts{display:grid;gap:10px}
+.opts.nums,.opts.two,.opts.shapes{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opts.nums .opt{font-family:var(--f-mono);font-size:22px}
+.opts.text .opt{text-align:left;font-weight:500;line-height:1.4;padding:14px 16px}
+.opts.shapes .opt{padding:10px;aspect-ratio:1/1;max-width:100%;display:grid;place-items:center}
+.opts.shapes svg{width:100%;max-width:120px;height:auto}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,var(--surface))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,var(--surface))}
+.opt:disabled{color:var(--ink)}
+.fb{min-height:1.5em;font-size:15px;max-width:62ch}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+.next{align-self:flex-start}
+
+.who{font-size:14px;color:var(--muted)}
+.quote{font-size:21px;line-height:1.38;font-weight:500;text-wrap:pretty}
+.ask{font-weight:600}
+
+.target{display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.target svg{width:130px;height:auto}
+.sq{fill:var(--c3);stroke:var(--surface);stroke-width:2}
+
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%;max-width:320px;margin:0 auto}
+.cell{aspect-ratio:1/1;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0;cursor:pointer;transition:background .15s}
+.cell:disabled{cursor:default}
+.cell.lit,.cell.hit{background:var(--c4);border-color:var(--c4)}
+.cell.miss{background:var(--bad);border-color:var(--bad)}
+.cell.missed{border:3px dashed var(--c4)}
+.cell:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hint{text-align:center;font-weight:600}
+
+.q{font-size:18px;line-height:1.45}
+.ai{border:1px dashed var(--c5);background:color-mix(in srgb,var(--c5) 7%,var(--surface));border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.ai .label{color:var(--c5);font-family:var(--f-mono);letter-spacing:.06em}
+
+.big{font-family:var(--f-mono);font-size:56px;line-height:1;color:var(--c)}
+.big small{font-size:20px;color:var(--muted)}
+.radar{display:grid;place-items:center}
+.radar svg{width:100%;max-width:420px;height:auto}
+.radar text{fill:var(--ink);font-family:var(--f-body);font-size:13px}
+.radar .val{font-family:var(--f-mono);fill:var(--muted);font-size:12px}
+.rows{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.row:last-child{border-bottom:1px solid var(--line)}
+.row .nm{font-weight:600}
+.row .bar{grid-column:1/2;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.row .bar i{display:block;height:100%;background:var(--c)}
+.row .rt{display:flex;align-items:center;gap:10px;grid-row:1/3;grid-column:2}
+.row .sc{font-family:var(--f-mono);font-size:18px;min-width:2.5ch;text-align:right}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <span class="brand">Пять суперсил</span>
+    <div class="segs" id="segs" aria-label="Прогресс по испытаниям"></div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s);
+const app=$('#app');
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function nextBtn(stage,label,fn){const b=document.createElement('button');b.className='btn primary next';b.textContent=label;b.onclick=fn;stage.appendChild(b);b.focus({preventScroll:true});}
+
+/* ---------- Контент (для детей от 7 лет) ---------- */
+const ABIL=[
+ {key:'c1',name:'Интуиция',short:'Угадать ответ, когда считать некогда',
+  essence:'Иногда ответ нужно найти быстро, без долгих подсчётов. Это и есть интуиция, догадка.',
+  rules:'На секунду появятся точки. Сосчитать их ты не успеешь. Посмотри и выбери, сколько их было. На ответ 8 секунд, всего 5 раундов.',
+  grow:'Играй в игры, где решать надо быстро: «Что? Где? Когда?», угадайки, «на глаз, сколько конфет в банке?». Сначала угадай, потом проверь.',
+  play:playIntuition},
+ {key:'c2',name:'Эмпатия',short:'Понять, что чувствует другой',
+  essence:'Эмпатия помогает понять, грустно человеку, обидно или страшно. Робот может сказать правильные слова, а почувствовать умеет человек.',
+  rules:'Кто-то рассказал, что у него случилось. Выбери ответ, после которого ему станет легче. 4 истории.',
+  grow:'Чаще спрашивай друзей и родных, как у них дела, и слушай до конца. Заботься о животных: они не скажут словами, им плохо или хорошо, это надо заметить самому.',
+  play:playEmpathy},
+ {key:'c3',name:'Воображение',short:'Увидеть в голове то, чего нет перед глазами',
+  essence:'Воображение помогает придумывать новое. Каждое изобретение сначала кто-то представил в голове.',
+  rules:'Сверху фигура из квадратиков. Внизу четыре фигуры. Одна из них та же самая, только повёрнутая. Три другие будто отражены в зеркале. Найди повёрнутую. 4 раунда.',
+  grow:'Читай книги, где нет картинок, и представляй героев сам. Рисуй то, что придумал. Собирай конструктор без инструкции.',
+  play:playImagination},
+ {key:'c4',name:'Память',short:'Запомнить картинку целиком',
+  essence:'Хорошая память помогает держать в голове всю картинку, а не искать каждую мелочь в телефоне.',
+  rules:'Несколько клеток загорятся на пару секунд. Потом нажми на них по памяти. С каждым раундом клеток больше: от 3 до 6.',
+  grow:'Играй в «Мемори» с карточками, учи стихи, пересказывай прочитанное своими словами. Попробуй вечером вспомнить свой день по порядку.',
+  play:playMemory},
+ {key:'c5',name:'Критическое мышление',short:'Проверять, а не верить на слово',
+  essence:'Нейросети тоже ошибаются. Умный человек не верит на слово, а проверяет.',
+  rules:'Робот-помощник решил задачку. Реши её сам, а потом скажи, прав робот или ошибся. 5 задачек.',
+  grow:'Когда тебе что-то говорят, спрашивай себя: «А откуда это известно?». Проверяй ответы роботов и взрослых, если что-то кажется странным.',
+  play:playCritical},
+];
+
+const EMP=[
+ {who:'Друг на перемене',say:'У меня сломалась машинка, которую подарил папа.',
+  opts:[{t:'Ой, жалко! Это же папин подарок. Хочешь, вместе посмотрим, можно ли починить?',ok:1},{t:'Подумаешь, машинка.'},{t:'Надо было аккуратнее играть.'},{t:'Игрушки часто ломаются.'}],
+  why:'Другу грустно, потому что игрушка ему дорога. Сначала скажи, что понимаешь его, а потом предложи помощь.'},
+ {who:'Младшая сестрёнка',say:'Меня не позвали играть в прятки.',
+  opts:[{t:'Обидно, когда не зовут. Давай поиграем вместе?',ok:1},{t:'Ну и не надо, не плачь.'},{t:'Значит, ты сама виновата.'},{t:'В прятки играют по правилам.'}],
+  why:'Сестрёнке обидно и одиноко. Ей поможет, если её поймут и позовут играть.'},
+ {who:'Одноклассник перед уроком',say:'Я боюсь отвечать у доски.',
+  opts:[{t:'Мне тоже бывает страшно. Хочешь, повторим вместе перед уроком?',ok:1},{t:'Чего тут бояться? Это легко.'},{t:'Трус!'},{t:'У доски отвечают все ученики.'}],
+  why:'Когда страшно, слова «это легко» не помогают. Помогает, если тебя понимают и поддерживают.'},
+ {who:'Бабушка',say:'Наш кот Барсик сегодня ничего не ел, я переживаю.',
+  opts:[{t:'Бабушка, ты волнуешься за Барсика. Давай вместе за ним понаблюдаем, а если не станет лучше, сходим к ветеринару?',ok:1},{t:'Захочет есть, сам поест.'},{t:'Не переживай.'},{t:'Коты иногда не едят.'}],
+  why:'Бабушка переживает за кота. Покажи, что ты это заметил, и предложи, что можно сделать.'},
+];
+
+const CRIT=[
+ {q:'У Айгерим было 3 яблока. Одно она отдала брату, а мама дала ей ещё 2. Сколько яблок у Айгерим?',ai:'У Айгерим 6 яблок.',ok:false,
+  why:'Было 3, отдала 1, осталось 2. Мама дала ещё 2, стало 4. Робот просто сложил все числа.'},
+ {q:'Что тяжелее: килограмм ваты или килограмм гвоздей?',ai:'Они весят одинаково, по одному килограмму.',ok:true,
+  why:'Верно. Гвозди кажутся тяжелее, но килограмм есть килограмм.'},
+ {q:'У каждого из трёх котят по 4 лапы. Сколько лап у всех котят вместе?',ai:'12 лап: 4 + 4 + 4 = 12.',ok:true,
+  why:'Всё верно, робот посчитал правильно.'},
+ {q:'Петух снёс яйцо на самой верхушке крыши. В какую сторону оно скатится?',ai:'Яйцо скатится влево, потому что левый скат крыши круче.',ok:false,
+  why:'Петухи вообще не несут яиц! Это делают курицы. Робот не заметил подвох в самом вопросе.'},
+ {q:'Летом люди едят больше мороженого. Летом в бассейнах тоже больше людей. Что из этого следует?',ai:'Мороженое заставляет людей идти в бассейн.',ok:false,
+  why:'Дело в жаре. Когда жарко, хочется и мороженого, и купаться. Одно не вызывает другое.'},
+];
+
+/* ---------- Состояние и экраны ---------- */
+let scores=[null,null,null,null,null], mode='run';
+
+function segs(active){
+  $('#segs').innerHTML=ABIL.map((a,i)=>`<span style="--c:var(--${a.key})" class="${scores[i]!==null?'done':''} ${i===active?'now':''}" title="${a.name}"></span>`).join('');
+}
+function getBest(){try{return localStorage.getItem('sei-best')}catch(e){return null}}
+function setBest(v){try{const b=+getBest()||0;if(v>b)localStorage.setItem('sei-best',String(v))}catch(e){}}
+
+function renderIntro(){
+  segs(-1); const best=getBest();
+  app.innerHTML=`<section class="screen">
+    <p class="eyebrow">Игра для детей от 7 лет и взрослых</p>
+    <h1>Пять суперсил человека</h1>
+    <p class="lede">Роботы и нейросети уже умеют быстро считать. Но есть пять суперсил, которые лучше всего получаются у людей. Их можно тренировать, как мышцы. Пройди пять испытаний и узнай, какая суперсила у тебя самая сильная.</p>
+    <ol class="ab-list">${ABIL.map((a,i)=>`<li style="--c:var(--${a.key})"><span class="num">${i+1}</span><div><b>${a.name}</b><span>${a.short}</span></div></li>`).join('')}</ol>
+    <div class="actions"><button class="btn primary" id="go">Начать игру</button>${best?`<span class="muted">Лучший результат: <b class="mono">${best}</b></span>`:''}</div>
+    <p class="note">Игра длится около 7 минут. Можно играть вместе со взрослым. Идея взята из выступления экономиста Александра Аузана.</p>
+  </section>`;
+  $('#go').onclick=()=>{scores=[null,null,null,null,null];mode='run';renderLevelIntro(0)};
+}
+
+function renderLevelIntro(i){
+  const a=ABIL[i]; segs(i); window.scrollTo(0,0);
+  app.innerHTML=`<section class="screen" style="--c:var(--${a.key})">
+    <p class="eyebrow">Испытание ${i+1} из 5</p>
+    <h2 class="ab-title">${a.name}</h2>
+    <p class="lede">${a.essence}</p>
+    <div class="rules"><p class="label">Как играть</p><p>${a.rules}</p></div>
+    <div class="actions"><button class="btn primary" id="go">Начать</button></div>
+  </section>`;
+  $('#go').onclick=()=>renderPlay(i);
+}
+
+function renderPlay(i){
+  const a=ABIL[i];
+  app.innerHTML=`<section class="screen" style="--c:var(--${a.key})">
+    <div class="playbar"><span class="chip">${a.name}</span><span class="mono muted" id="rc"></span></div>
+    <div id="stage"></div></section>`;
+  a.play($('#stage'),{
+    round:(k,n)=>{$('#rc').textContent=`раунд ${k} / ${n}`},
+    finish:s=>{scores[i]=Math.round(s);levelDone(i)}
+  });
+}
+
+function verdict(s){return s>=80?'Отлично!':s>=50?'Хорошо!':'Есть куда расти'}
+
+function levelDone(i){
+  const a=ABIL[i], s=scores[i]; segs(-1); window.scrollTo(0,0);
+  const last=i===ABIL.length-1;
+  const label=mode==='single'?'К профилю':last?'Смотреть профиль':`Дальше: ${ABIL[i+1].name}`;
+  app.innerHTML=`<section class="screen" style="--c:var(--${a.key})">
+    <p class="eyebrow">${a.name}</p>
+    <p class="big">${s}<small> / 100</small></p>
+    <h2>${verdict(s)}</h2>
+    <div class="rules"><p class="label">Как тренировать</p><p>${a.grow}</p></div>
+    <div class="actions"><button class="btn primary" id="go">${label}</button></div>
+  </section>`;
+  $('#go').onclick=()=>{ if(mode==='single'||last) renderResults(); else renderLevelIntro(i+1) };
+}
+
+function radar(vals){
+  const cx=150,cy=150,R=105, pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/5;return [cx+r*Math.cos(a),cy+r*Math.sin(a)]};
+  const poly=r=>ABIL.map((_,i)=>pt(i,r).map(v=>v.toFixed(1)).join(',')).join(' ');
+  let g='';
+  [0.25,0.5,0.75,1].forEach(f=>g+=`<polygon points="${poly(R*f)}" fill="none" stroke="var(--line)" stroke-width="1"/>`);
+  ABIL.forEach((_,i)=>{const [x,y]=pt(i,R);g+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)"/>`});
+  const dp=vals.map((v,i)=>pt(i,R*Math.max(v,3)/100).map(n=>n.toFixed(1)).join(',')).join(' ');
+  g+=`<polygon points="${dp}" fill="var(--accent)" fill-opacity=".14" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+  vals.forEach((v,i)=>{const [x,y]=pt(i,R*Math.max(v,3)/100);g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" style="fill:var(--${ABIL[i].key})" stroke="var(--surface)" stroke-width="2"/>`});
+  ABIL.forEach((a,i)=>{
+    const [x,y]=pt(i,R+18), anchor=Math.abs(x-cx)<5?'middle':x>cx?'start':'end';
+    const lines=a.name==='Критическое мышление'?['Критическое','мышление']:[a.name];
+    const y0=i===0?y-6-(lines.length-1)*15:i===2||i===3?y+8:y-(lines.length-1)*8+4;
+    g+=`<text x="${x.toFixed(1)}" y="${y0.toFixed(1)}" text-anchor="${anchor}">${lines.map((l,j)=>`<tspan x="${x.toFixed(1)}" dy="${j?15:0}">${l}</tspan>`).join('')}<tspan class="val" x="${x.toFixed(1)}" dy="15">${vals[i]}</tspan></text>`;
+  });
+  return `<svg viewBox="-70 -10 440 320" role="img" aria-label="Профиль способностей">${g}</svg>`;
+}
+
+function renderResults(){
+  segs(-1); window.scrollTo(0,0);
+  const vals=scores.map(s=>s??0), avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+  setBest(avg);
+  const weak=vals.indexOf(Math.min(...vals)), strong=vals.indexOf(Math.max(...vals));
+  app.innerHTML=`<section class="screen">
+    <p class="eyebrow">Твой результат</p>
+    <h2>Ты набрал <span class="mono">${avg}</span> из 100</h2>
+    <p class="lede">Твоя самая сильная суперсила: <b>${ABIL[strong].name.toLowerCase()}</b>. Больше всего стоит потренировать: <b>${ABIL[weak].name.toLowerCase()}</b>.</p>
+    <div class="radar">${radar(vals)}</div>
+    <div class="rows">${ABIL.map((a,i)=>`<div class="row" style="--c:var(--${a.key})">
+      <span class="nm">${a.name}</span>
+      <div class="rt"><span class="sc">${vals[i]}</span><button class="btn small" data-i="${i}">Ещё раз</button></div>
+      <div class="bar"><i style="width:${vals[i]}%"></i></div></div>`).join('')}</div>
+    <div class="rules" style="--c:var(--${ABIL[weak].key})"><p class="label">Что потренировать: ${ABIL[weak].name}</p><p>${ABIL[weak].grow}</p></div>
+    <p class="note">Для взрослых: по Аузану, роль человека смещается от рутинной аналитики к постановке задач, гипотезам и смысловой экспертизе. Обсудите с ребёнком, какое испытание далось легче всего и почему.</p>
+    <div class="actions"><button class="btn primary" id="again">Играть ещё раз</button><button class="btn" id="home">На главную</button></div>
+  </section>`;
+  app.querySelectorAll('.row .btn').forEach(b=>b.onclick=()=>{mode='single';renderLevelIntro(+b.dataset.i)});
+  $('#again').onclick=()=>{scores=[null,null,null,null,null];mode='run';renderLevelIntro(0)};
+  $('#home').onclick=renderIntro;
+}
+
+/* ---------- 1. Интуиция ---------- */
+function dots(cv,target){
+  const r=cv.getBoundingClientRect(), d=window.devicePixelRatio||1;
+  cv.width=Math.round(r.width*d); cv.height=Math.round(r.height*d);
+  const W=r.width,H=r.height, rad=Math.max(3.5,Math.min(6,W/65)), min=(rad*2.7)**2, pts=[];
+  let tries=0;
+  while(pts.length<target&&tries<8000){tries++;
+    const x=rad+3+Math.random()*(W-2*rad-6), y=rad+3+Math.random()*(H-2*rad-6);
+    if(pts.every(p=>(p.x-x)**2+(p.y-y)**2>min)) pts.push({x,y});}
+  const paint=()=>{const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,W,H);c.fillStyle=css('--c1');
+    for(const p of pts){c.beginPath();c.arc(p.x,p.y,rad,0,Math.PI*2);c.fill()}};
+  return {paint,n:pts.length};
+}
+function estOpts(n){
+  const s=new Set([n]); let g=0;
+  while(s.size<4&&g<400){g++;
+    const f=[0.5,0.65,0.75,1.3,1.45,1.7][rnd(0,5)], v=Math.round(n*f+rnd(-2,2));
+    if(v>3&&[...s].every(x=>Math.abs(x-v)>=Math.max(3,n*0.15))) s.add(v);}
+  return [...s].sort((a,b)=>a-b);
+}
+function playIntuition(stage,api){
+  const N=5; let k=0,total=0; next();
+  function next(){
+    if(k===N) return api.finish(total);
+    k++; api.round(k,N);
+    stage.innerHTML=`<div class="field"><canvas aria-label="Облако точек"></canvas><div class="veil">Смотри внимательно!</div></div>
+      <div class="timer"><i></i></div><div class="opts nums"></div><p class="fb" aria-live="polite"></p>`;
+    const cv=$('canvas',stage),veil=$('.veil',stage),bar=$('.timer i',stage),opts=$('.opts',stage),fb=$('.fb',stage);
+    let dd;
+    setTimeout(()=>{
+      dd=dots(cv,rnd(6,30)); veil.hidden=true; dd.paint();
+      setTimeout(()=>{veil.textContent='Сколько было точек?';veil.hidden=false;ask()},1500);
+    },900);
+    function ask(){
+      const n=dd.n, vals=estOpts(n), LIM=8000, t0=performance.now(); let over=false;
+      opts.innerHTML=vals.map(v=>`<button class="btn opt" data-v="${v}">${v}</button>`).join('');
+      const tick=()=>{if(over)return;const p=Math.min(1,(performance.now()-t0)/LIM);bar.style.transform=`scaleX(${1-p})`;
+        if(p>=1)end(null);else requestAnimationFrame(tick)};
+      requestAnimationFrame(tick);
+      opts.onclick=e=>{const b=e.target.closest('.opt');if(b&&!over)end(+b.dataset.v,b)};
+      function end(v,b){
+        over=true;
+        opts.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.v===n)x.classList.add('right')});
+        if(b&&v!==n)b.classList.add('wrong');
+        if(v===n){total+=20;fb.innerHTML=`<b class="ok">Угадал!</b> Точек было ${n}.`}
+        else if(v===null)fb.innerHTML=`<b class="bad">Время вышло.</b> Точек было ${n}.`;
+        else fb.innerHTML=`<b class="bad">Почти.</b> Точек было ${n}, а ты выбрал ${v}.`;
+        veil.hidden=true; dd.paint();
+        nextBtn(stage,k===N?'Готово':'Дальше',next);
+      }
+    }
+  }
+}
+
+/* ---------- 2. Эмпатия ---------- */
+function playEmpathy(stage,api){
+  const list=shuffle(EMP.slice()), N=list.length; let k=0,total=0; next();
+  function next(){
+    if(k===N) return api.finish(total);
+    const s=list[k++]; api.round(k,N);
+    const opts=shuffle(s.opts.slice());
+    stage.innerHTML=`<p class="who">${s.who}</p><p class="quote">«${s.say}»</p><p class="ask">Что ты ответишь?</p>
+      <div class="opts text">${opts.map((o,i)=>`<button class="btn opt" data-i="${i}">${o.t}</button>`).join('')}</div>
+      <p class="fb" aria-live="polite"></p>`;
+    const box=$('.opts',stage),fb=$('.fb',stage);
+    box.onclick=e=>{
+      const b=e.target.closest('.opt'); if(!b||b.disabled) return;
+      const o=opts[+b.dataset.i];
+      box.querySelectorAll('.opt').forEach((x,i)=>{x.disabled=true;if(opts[i].ok)x.classList.add('right')});
+      if(o.ok)total+=25;else b.classList.add('wrong');
+      fb.innerHTML=`<b class="${o.ok?'ok':'bad'}">${o.ok?'Здорово!':'Подумай ещё.'}</b> ${s.why}`;
+      nextBtn(stage,k===N?'Готово':'Дальше',next);
+    };
+  }
+}
+
+/* ---------- 3. Воображение ---------- */
+function norm(c){const mx=Math.min(...c.map(p=>p[0])),my=Math.min(...c.map(p=>p[1]));
+  return c.map(([x,y])=>[x-mx,y-my]).sort((a,b)=>a[0]-b[0]||a[1]-b[1])}
+const key=c=>norm(c).map(p=>p.join(',')).join(';');
+const rot=c=>c.map(([x,y])=>[-y,x]);
+const mir=c=>c.map(([x,y])=>[-x,y]);
+const rotN=(c,n)=>{for(let i=0;i<n;i++)c=rot(c);return norm(c)};
+function genShape(k){
+  for(let guard=0;guard<5000;guard++){
+    const cells=[[0,0]], has=(x,y)=>cells.some(p=>p[0]===x&&p[1]===y);
+    while(cells.length<k){const [x,y]=cells[rnd(0,cells.length-1)],[dx,dy]=[[1,0],[-1,0],[0,1],[0,-1]][rnd(0,3)];
+      if(!has(x+dx,y+dy))cells.push([x+dx,y+dy])}
+    const s=norm(cells), w=Math.max(...s.map(p=>p[0]))+1, h=Math.max(...s.map(p=>p[1]))+1;
+    if(Math.max(w,h)>4) continue;
+    const rk=[0,1,2,3].map(n=>key(rotN(s,n)));
+    if(new Set(rk).size<4) continue;
+    if(rk.includes(key(mir(s)))) continue;
+    return s;
+  }
+  return [[0,0],[1,0],[2,0],[2,1],[0,1]].slice(0,k);
+}
+function shapeSVG(c){
+  const S=20,M=4,w=Math.max(...c.map(p=>p[0]))+1,h=Math.max(...c.map(p=>p[1]))+1,ox=(M-w)*S/2,oy=(M-h)*S/2;
+  return `<svg viewBox="-3 -3 ${M*S+6} ${M*S+6}" aria-hidden="true">${c.map(([x,y])=>`<rect class="sq" x="${ox+x*S}" y="${oy+y*S}" width="${S}" height="${S}" rx="3"/>`).join('')}</svg>`;
+}
+function playImagination(stage,api){
+  const sizes=[4,4,5,5], N=sizes.length; let k=0,total=0; next();
+  function next(){
+    if(k===N) return api.finish(total);
+    const s=genShape(sizes[k++]); api.round(k,N);
+    const correct=rotN(s,rnd(1,3)), m=norm(mir(s));
+    const mirrors=shuffle([0,1,2,3].map(n=>rotN(m,n))).slice(0,3);
+    const opts=shuffle([{c:correct,ok:true},...mirrors.map(c=>({c}))]);
+    stage.innerHTML=`<p class="ask">Какая фигура та же самая, только повёрнутая?</p>
+      <div class="target">${shapeSVG(s)}</div>
+      <div class="opts shapes">${opts.map((o,i)=>`<button class="btn opt" data-i="${i}" aria-label="Вариант ${i+1}">${shapeSVG(o.c)}</button>`).join('')}</div>
+      <p class="fb" aria-live="polite"></p>`;
+    const box=$('.opts',stage),fb=$('.fb',stage);
+    box.onclick=e=>{
+      const b=e.target.closest('.opt'); if(!b||b.disabled) return;
+      const o=opts[+b.dataset.i];
+      box.querySelectorAll('.opt').forEach((x,i)=>{x.disabled=true;if(opts[i].ok)x.classList.add('right')});
+      if(o.ok){total+=25;fb.innerHTML='<b class="ok">Верно!</b> Это та же фигура, её просто повернули.'}
+      else{b.classList.add('wrong');fb.innerHTML='<b class="bad">Это отражение в зеркале.</b> Правильная фигура подсвечена зелёным.'}
+      nextBtn(stage,k===N?'Готово':'Дальше',next);
+    };
+  }
+}
+
+/* ---------- 4. Память ---------- */
+function playMemory(stage,api){
+  const counts=[3,4,5,6], N=counts.length; let k=0,total=0; next();
+  function next(){
+    if(k===N) return api.finish(total);
+    const n=counts[k++]; api.round(k,N);
+    stage.innerHTML=`<p class="hint">Запоминай!</p><div class="grid">${Array.from({length:16},(_,i)=>`<button class="cell" data-i="${i}" disabled aria-label="Клетка ${i+1}"></button>`).join('')}</div><p class="fb" aria-live="polite"></p>`;
+    const cells=[...stage.querySelectorAll('.cell')],hint=$('.hint',stage),fb=$('.fb',stage);
+    const target=new Set(shuffle([...Array(16).keys()]).slice(0,n));
+    setTimeout(()=>{
+      target.forEach(i=>cells[i].classList.add('lit'));
+      setTimeout(()=>{
+        target.forEach(i=>cells[i].classList.remove('lit'));
+        hint.textContent=`Нажми на ${n} ${n<5?'клетки':'клеток'}, которые горели`;
+        cells.forEach(c=>c.disabled=false);
+        let taps=0,hits=0;
+        stage.querySelector('.grid').onclick=e=>{
+          const c=e.target.closest('.cell'); if(!c||c.disabled) return;
+          c.disabled=true; taps++;
+          if(target.has(+c.dataset.i)){c.classList.add('hit');hits++}else c.classList.add('miss');
+          hint.textContent=taps<n?`Осталось: ${n-taps}`:'Готово';
+          if(taps===n){
+            cells.forEach((x,i)=>{x.disabled=true;if(target.has(i)&&!x.classList.contains('hit'))x.classList.add('missed')});
+            const pts=Math.round(hits/n*25); total+=pts;
+            fb.innerHTML=hits===n?`<b class="ok">Все ${n} ${n<5?'клетки':'клеток'} нашёл!</b>`:`<b class="${hits>=n/2?'ok':'bad'}">Нашёл ${hits} из ${n}.</b> Те, что пропустил, обведены пунктиром.`;
+            nextBtn(stage,k===N?'Готово':'Дальше',next);
+          }
+        };
+      },1500+250*n);
+    },700);
+  }
+}
+
+/* ---------- 5. Критическое мышление ---------- */
+function playCritical(stage,api){
+  const list=shuffle(CRIT.slice()), N=list.length; let k=0,total=0; next();
+  function next(){
+    if(k===N) return api.finish(total);
+    const t=list[k++]; api.round(k,N);
+    stage.innerHTML=`<p class="label">Задачка</p><p class="q">${t.q}</p>
+      <div class="ai"><p class="label">Ответ робота</p><p>${t.ai}</p></div>
+      <div class="opts two"><button class="btn opt" data-v="1">Робот прав</button><button class="btn opt" data-v="0">Робот ошибся</button></div>
+      <p class="fb" aria-live="polite"></p>`;
+    const box=$('.opts',stage),fb=$('.fb',stage);
+    box.onclick=e=>{
+      const b=e.target.closest('.opt'); if(!b||b.disabled) return;
+      const said=b.dataset.v==='1', right=said===t.ok;
+      box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if((x.dataset.v==='1')===t.ok)x.classList.add('right')});
+      if(right)total+=20;else b.classList.add('wrong');
+      fb.innerHTML=`<b class="${right?'ok':'bad'}">${right?'Молодец!':'Не совсем.'}</b> ${t.why}`;
+      nextBtn(stage,k===N?'Готово':'Дальше',next);
+    };
+  }
+}
+
+/* ---------- Запуск ---------- */
+function start(d){
+  if(d&&Array.isArray(d.scores)&&d.scores.length===5) scores=d.scores;
+  scores.every(s=>s!==null)?renderResults():renderIntro();
+}
+start({});
+</script>
+</body>
+</html>
